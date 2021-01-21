@@ -13,8 +13,8 @@ struct Record {
 };
 
 struct List {
-	int size;
-	int first;
+	int size; 
+	int first;  
 	int free;
 	struct Record* buffer;
 };
@@ -39,6 +39,9 @@ Boolean suf_delete(struct List* list, int* value);
 
 //Prototipo della funzione di ricerca di un elemento all'interno della lista
 Boolean search_value(struct List* list, int value);
+
+//Prototipo della funzione che scambia due record della lista
+Boolean change_records(struct List* list, int x, int y);
 
 int main() {
 	struct List list;
@@ -88,9 +91,16 @@ int main() {
 	//Test della funzione search_value()
 	if (search_value(&list, 8))
 		printf("Elemento presente all'interno della lista!\n");
+	if (!suf_insert(&list, 7))
+		printf("Lista piena!\n");
+	visit(&list);
+
+	//Test della funzione change_records()
+	if (change_records(&list, 5, 7))
+		printf("Elementi scambiati con successo\n");
 	visit(&list);
 	free(list.buffer);
-    system("pause");
+	system("pause");
 	return 0;
 }
 
@@ -236,4 +246,44 @@ Boolean search_value(struct List* list, int value)
 			pos = list->buffer[pos].next;
 	}
 	return FALSE;
+}
+
+/**
+ * Funzione che scambia due record presenti nella lista. Tra i parametri formali riceve 
+ * il puntatore all'indirizzo della lista dichiarata nel main e due variabili x e y le quali
+ * rappresentano i record da scambiare nella lista.
+ * @param list puntatore all'indirizzo della lista dichiarata nel main
+ * @param x valore del record da scambiare 
+ * @param y valore del secondo record da scambiare
+ * @return TRUE se i record sono stati cambiati, altrimenti FALSE.
+ */
+Boolean change_records(struct List* list, int x, int y)
+{
+	if (list->first == list->size)    //lista vuota
+		return FALSE;
+	int* position_x = &(list->first);
+	int* position_y = position_x;
+	Boolean found_x = FALSE, found_y = FALSE;
+	while (*position_x != list->size && found_x == FALSE) {   //Ricerca del record con valore uguale a x
+		if (list->buffer[*position_x].value == x)
+			found_x = TRUE;
+		else
+			position_x = &(list->buffer[*position_x].next);
+	}
+	while (*position_y != list->size && found_y == FALSE) {
+		if (list->buffer[*position_y].value == y)                   //Ricerca del record con valore uguale a y
+			found_y = TRUE;
+		else
+			position_y = &(list->buffer[*position_y].next);
+	}
+	if (found_x && found_y) {
+		int tmp = *position_x;
+		*position_x = *position_y;
+		*position_y = tmp;
+		tmp = list->buffer[*position_x].next;
+		list->buffer[*position_x].next = list->buffer[*position_y].next;
+		list->buffer[*position_y].next = tmp;
+		return TRUE;
+	}
+	return FALSE;   //Valori inesistenti
 }
